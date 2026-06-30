@@ -1,4 +1,6 @@
 /.env.local
 /.pipeline
-node_modules
-/.trae
+node_modules/
+.trae/
+.next/
+.obsidian/

@@ -39,20 +39,6 @@ export interface ModuleRecord {
   sourceFile: string;
 }
 
-export interface AdvisorFormData {
-  name: string;
-  email: string;
-  degreeRoute: string;
-  interests: InterestTag[];
-  assessmentPreference: AssessmentPreference;
-  workloadPreference: WorkloadPreference;
-  careerGoal: CareerGoal;
-  broadeningInterest: boolean;
-  aiMlInterest: boolean;
-  theoryPracticeBalance: TheoryPracticeBalance;
-  notes: string;
-}
-
 export interface RankedModule {
   module: ModuleRecord;
   score: number;

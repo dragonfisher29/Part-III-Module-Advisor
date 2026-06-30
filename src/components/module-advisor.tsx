@@ -3,8 +3,9 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 
-import type { AdvisorFormData, ModuleRecord, RankedModule, RecommendationResult } from "@/lib/types";
-import { advisorFormSchema } from "@/lib/validation";
+import type { ModuleRecord, RankedModule, RecommendationResult } from "@/lib/types";
+import { advisorFormSchema, PRIOR_MODULE_CODES } from "@/lib/validation";
+import type { AdvisorFormData, AdvisorFormInput } from "@/lib/validation";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 const interestOptions = [
@@ -16,6 +17,13 @@ const interestOptions = [
   { value: "creative-visual", label: "Creative & Visual" },
   { value: "maths-optimisation", label: "Maths & Optimisation" },
 ] as const;
+
+const priorModuleLabels: Record<(typeof PRIOR_MODULE_CODES)[number], string> = {
+  COMP1202: "COMP1202 Programming I",
+  COMP1203: "COMP1203 Computer Systems I",
+  COMP1206: "COMP1206 Programming II",
+  COMP2208: "COMP2208 Intelligent Systems",
+};
 
 const semesterLabels = {
   semester1: "Semester 1",
@@ -68,7 +76,7 @@ export function ModuleAdvisor({ modules }: { modules: ModuleRecord[] }) {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<AdvisorFormData>({
+  } = useForm<AdvisorFormInput, unknown, AdvisorFormData>({
     resolver: zodResolver(advisorFormSchema),
     defaultValues: {
       name: "",
@@ -80,6 +88,7 @@ export function ModuleAdvisor({ modules }: { modules: ModuleRecord[] }) {
       careerGoal: "undecided",
       broadeningInterest: false,
       aiMlInterest: false,
+      priorModules: [],
       theoryPracticeBalance: "balanced",
       notes: "",
     },
@@ -230,6 +239,27 @@ export function ModuleAdvisor({ modules }: { modules: ModuleRecord[] }) {
               ))}
             </div>
             {errors.interests ? <span className="mt-2 block text-sm text-rose-300">{errors.interests.message}</span> : null}
+          </div>
+
+          <div className="mt-6">
+            <div className="mb-3">
+              <p className="text-sm text-slate-200">Modules already taken in previous years</p>
+              <p className="mt-1 text-xs leading-6 text-slate-400">
+                Tick any common `COMP1xxx` or `COMP2xxx` prerequisites you have already completed so the advisor can
+                treat them as satisfied.
+              </p>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {PRIOR_MODULE_CODES.map((code) => (
+                <label
+                  key={code}
+                  className="flex items-center gap-3 rounded-[22px] border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-100"
+                >
+                  <input type="checkbox" value={code} {...register("priorModules")} />
+                  <span>{priorModuleLabels[code]}</span>
+                </label>
+              ))}
+            </div>
           </div>
 
           <div className="mt-6 grid gap-4 sm:grid-cols-3">

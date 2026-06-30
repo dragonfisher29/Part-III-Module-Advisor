@@ -28,31 +28,31 @@ In Part III, all students must take ECSP3000/ECSP3001 Individual Project. Note t
 
 ### Optional
 
-| Code     | Title                                           | Credits |
-| -------- | ----------------------------------------------- | ------- |
-| COMP3204 | [[Computer Vision]]                             | 15      |
-| COMP3207 | [[Cloud Application Development]]               | 15      |
-| COMP3208 | [[Social Computing Techniques]]                 | 15      |
-| COMP3210 | [[Advanced Computer Networks]]                  | 15      |
-| COMP3211 | [[Advanced Databases]]                          | 15      |
-| COMP3212 | [[Computational Biology]]                       | 15      |
-| COMP3215 | [[Real-Time Computing and Embedded Systems]]    | 15      |
-| COMP3217 | [[Security of Cyber Physical Systems]]          | 15      |
-| COMP3218 | [[Game Design and Development]]                 | 15      |
-| COMP3224 | [[Causal Reasoning and Machine Learning]]       | 15      |
-| COMP3225 | [[Natural Language Processing]]                 | 15      |
-| COMP3226 | [[Web and Cloud Based Security]]                | 15      |
-| COMP3227 | [[Web Architecture and Hypertext Technologies]] | 15      |
-| COMP3228 | [[History of Computing]]                        | 15      |
-| ELEC3219 | [[Advanced Computer Architecture]]              | 15      |
-| MATH3081 | [[Operational Research]]                        | 15      |
-| MATH3082 | [[Optimisation]]                                | 15      |
+| Code     | Title                                           | Credits | Semester |
+| -------- | ----------------------------------------------- | ------- | -------- |
+| COMP3204 | [[Computer Vision]]                             | 15      | I        |
+| COMP3207 | [[Cloud Application Development]]               | 15      | I        |
+| COMP3208 | [[Social Computing Techniques]]                 | 15      | II       |
+| COMP3210 | [[Advanced Computer Networks]]                  | 15      | II       |
+| COMP3211 | [[Advanced Databases]]                          | 15      | II       |
+| COMP3212 | [[Computational Biology]]                       | 15      | II       |
+| COMP3215 | [[Real-Time Computing and Embedded Systems]]    | 15      | I        |
+| COMP3217 | [[Security of Cyber Physical Systems]]          | 15      | II       |
+| COMP3218 | [[Game Design and Development]]                 | 15      | I        |
+| COMP3224 | [[Causal Reasoning and Machine Learning]]       | 15      | II       |
+| COMP3225 | [[Natural Language Processing]]                 | 15      | II       |
+| COMP3226 | [[Web and Cloud Based Security]]                | 15      |          |
+| COMP3227 | [[Web Architecture and Hypertext Technologies]] | 15      | I        |
+| COMP3228 | [[History of Computing]]                        | 15      | I        |
+| ELEC3219 | [[Advanced Computer Architecture]]              | 15      |          |
+| MATH3081 | [[Operational Research]]                        | 15      | II       |
+| MATH3082 | [[Optimisation]]                                | 15      | II       |
 
 #### Machine Learning
 
 Students may only take one Machine Learning module.
 
-| Code     | Title                                     | Credits |
-| -------- | ----------------------------------------- | ------- |
-| COMP3223 | [[Foundations of Machine Learning 2026-27]] | 15      |
-| COMP3222 | [[Machine Learning Technologies 2026-27]]   | 15      |
+| Code     | Title                                       | Credits | Semester |
+| -------- | ------------------------------------------- | ------- | -------- |
+| COMP3223 | [[Foundations of Machine Learning 2026-27]] | 15      |          |
+| COMP3222 | [[Machine Learning Technologies 2026-27]]   | 15      | I        |

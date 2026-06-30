@@ -12,6 +12,7 @@ const SEMESTER_FILES = {
 } as const;
 
 const YEAR_SUFFIX_PATTERN = /\s+\d{4}-\d{2}$/;
+const MODULE_CODE_PATTERN = /\b[A-Z]{4}\d{4}\b/;
 
 let cachedCatalog: ModuleRecord[] | null = null;
 
@@ -144,12 +145,37 @@ function inferWorkloadProfile(content: string, assessment: AssessmentStyle): Wor
   return "balanced";
 }
 
+function extractModuleCode(content: string, titleFromSemester: string) {
+  const headingMatch = content.match(/# \*\*([A-Z]{4}\d{4}) - (.+?)\*\*/);
+
+  if (headingMatch?.[1]) {
+    return headingMatch[1];
+  }
+
+  const firstMatch = content.match(MODULE_CODE_PATTERN)?.[0];
+
+  if (firstMatch) {
+    return firstMatch;
+  }
+
+  return titleFromSemester.slice(0, 8);
+}
+
+function extractModuleTitle(content: string, fallbackTitle: string) {
+  const headingMatch = content.match(/# \*\*[A-Z]{4}\d{4} - (.+?)\*\*/);
+
+  if (headingMatch?.[1]) {
+    return headingMatch[1].replace(YEAR_SUFFIX_PATTERN, "").trim();
+  }
+
+  return fallbackTitle.replace(YEAR_SUFFIX_PATTERN, "").trim();
+}
+
 function parseModule(titleFromSemester: string, semester: ModuleRecord["semester"]): ModuleRecord {
   const fileName = `${titleFromSemester}.md`;
   const content = readWorkspaceFile(fileName);
-  const headingMatch = content.match(/# \*\*([A-Z]{4}\d{4}) - (.+?)\*\*/);
-  const code = headingMatch?.[1] ?? titleFromSemester.slice(0, 8);
-  const headingTitle = headingMatch?.[2]?.replace(YEAR_SUFFIX_PATTERN, "").trim() ?? titleFromSemester;
+  const code = extractModuleCode(content, titleFromSemester);
+  const headingTitle = extractModuleTitle(content, titleFromSemester);
   const overview = extractSection(content, "Module overview").replace(/\s+/g, " ").trim();
   const syllabus = extractSection(content, "Syllabus summary").replace(/\s+/g, " ").trim();
   const creditsMatch = content.match(/\|School\|Module Code\|Credit Points\|Level\|[\s\S]*?\|.*?\|.*?\|(\d+)\|/);

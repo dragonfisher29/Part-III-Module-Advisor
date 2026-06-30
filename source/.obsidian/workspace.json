@@ -13,15 +13,100 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Part III.md",
+                "file": "Advanced Computer Networks.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Part III"
+              "title": "Advanced Computer Networks"
+            }
+          },
+          {
+            "id": "14aa0104761e92a5",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Advanced Databases.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Advanced Databases"
+            }
+          },
+          {
+            "id": "8922b41a382d8a33",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Machine Learning Technologies 2026-27.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Machine Learning Technologies 2026-27"
+            }
+          },
+          {
+            "id": "86c6ba7cbb17adf9",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Web Architecture and Hypertext Technologies.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Web Architecture and Hypertext Technologies"
+            }
+          },
+          {
+            "id": "64a05dd067873671",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Computer Vision.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Computer Vision"
+            }
+          },
+          {
+            "id": "597a255b76106c2d",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Semester I.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Semester I"
+            }
+          },
+          {
+            "id": "15f7401cb5c8de5c",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Web and Cloud Based Security.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Web and Cloud Based Security"
             }
           }
-        ]
+        ],
+        "currentTab": 5
       }
     ],
     "direction": "vertical"
@@ -53,7 +138,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "comp3223",
+                "query": "comp2",
                 "matchingCase": false,
                 "explainSearch": false,
                 "collapseAll": false,
@@ -74,8 +159,7 @@
               "title": "Bookmarks"
             }
           }
-        ],
-        "currentTab": 1
+        ]
       }
     ],
     "direction": "horizontal",
@@ -181,9 +265,21 @@
       "bases:Create new base": false
     }
   },
-  "active": "abcc5bf03e49c61b",
+  "active": "597a255b76106c2d",
   "lastOpenFiles": [
-    "Causal Reasoning and Machine Learning.md",
-    "Part III.md"
+    "Part III.md",
+    "Semester I.md",
+    "Semester II.md",
+    "Game Design and Development.md",
+    "Foundations of Machine Learning 2026-27.md",
+    "Web and Cloud Based Security.md",
+    "Advanced Computer Networks.md",
+    "Advanced Databases.md",
+    "Machine Learning Technologies 2026-27.md",
+    "Web Architecture and Hypertext Technologies.md",
+    "Computer Vision.md",
+    "Computational Biology.md",
+    "Social Computing Techniques.md",
+    "Causal Reasoning and Machine Learning.md"
   ]
 }

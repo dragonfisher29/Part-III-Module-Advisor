@@ -1,4 +1,6 @@
 [[Computer Vision]]
+[[Cloud Application Development]]
+[[Real-Time Computing and Embedded Systems]]
 [[Game Design and Development]]
 [[Web Architecture and Hypertext Technologies]]
 [[History of Computing]]

@@ -1,10 +1,11 @@
 import type {
-  AdvisorFormData,
-  InterestTag,
   ModuleRecord,
   RankedModule,
   RecommendationResult,
 } from "@/lib/types";
+import type { AdvisorFormData } from "@/lib/validation";
+
+type InterestTag = AdvisorFormData["interests"][number];
 
 const PLAN_COUNTS = {
   semester1: 3,
@@ -29,6 +30,10 @@ const CAREER_WEIGHTS: Record<AdvisorFormData["careerGoal"], string[]> = {
   "product-ux": ["human-centred", "creative-visual", "web-cloud"],
   undecided: ["practical", "human-centred", "data"],
 };
+
+function getPreviouslyTakenCodes(answers: AdvisorFormData) {
+  return new Set(answers.priorModules);
+}
 
 function buildReasons(module: ModuleRecord, answers: AdvisorFormData) {
   const reasons: string[] = [];
@@ -122,31 +127,44 @@ function scoreModule(module: ModuleRecord, answers: AdvisorFormData) {
   return score;
 }
 
-function getBlockedBy(module: ModuleRecord, selectedEarlierCodes: Set<string>, allModules: ModuleRecord[]) {
+function getBlockedBy(
+  module: ModuleRecord,
+  selectedEarlierCodes: Set<string>,
+  allModules: ModuleRecord[],
+  previouslyTakenCodes: Set<string>,
+) {
   const blockers: string[] = [];
 
   for (const prerequisite of module.prerequisites) {
-    const prereqModule = allModules.find((candidate) => candidate.code === prerequisite);
-
-    if (!prereqModule) {
-      blockers.push(`${module.code} depends on ${prerequisite}, which is not in the current semester source data.`);
+    if (selectedEarlierCodes.has(prerequisite) || previouslyTakenCodes.has(prerequisite)) {
       continue;
     }
 
-    if (!selectedEarlierCodes.has(prerequisite)) {
-      const detail =
-        prereqModule.semester === "semester1"
-          ? `${module.code} requires ${prerequisite}, but it is not included in the Semester 1 plan.`
-          : `${module.code} requires ${prerequisite}, which is not scheduled earlier in the plan.`;
-      blockers.push(detail);
+    const prereqModule = allModules.find((candidate) => candidate.code === prerequisite);
+
+    if (!prereqModule) {
+      blockers.push(`${module.code} expects ${prerequisite}, but you have not marked it as already taken.`);
+      continue;
     }
+
+    const detail =
+      prereqModule.semester === "semester1"
+        ? `${module.code} requires ${prerequisite}, but it is not included in the Semester 1 plan.`
+        : `${module.code} requires ${prerequisite}, which is not scheduled earlier in the plan.`;
+    blockers.push(detail);
   }
 
-  if (module.code === "COMP3225" && !selectedEarlierCodes.has("COMP3222") && !selectedEarlierCodes.has("COMP3223")) {
+  if (
+    module.code === "COMP3225" &&
+    !selectedEarlierCodes.has("COMP3222") &&
+    !selectedEarlierCodes.has("COMP3223") &&
+    !previouslyTakenCodes.has("COMP3222") &&
+    !previouslyTakenCodes.has("COMP3223")
+  ) {
     blockers.push("COMP3225 needs a machine learning module first.");
   }
 
-  if (module.code === "COMP3224" && !selectedEarlierCodes.has("COMP3223")) {
+  if (module.code === "COMP3224" && !selectedEarlierCodes.has("COMP3223") && !previouslyTakenCodes.has("COMP3223")) {
     blockers.push("COMP3224 requires COMP3223, which is not available in the current semester source list.");
   }
 
@@ -168,10 +186,12 @@ function chooseBalancedModules(
   rankedSemester1: RankedModule[],
   rankedSemester2: RankedModule[],
   modules: ModuleRecord[],
+  answers: AdvisorFormData,
 ) {
   const chosenSemester1: RankedModule[] = [];
   const chosenSemester2: RankedModule[] = [];
   const selectedEarlierCodes = new Set<string>();
+  const previouslyTakenCodes = getPreviouslyTakenCodes(answers);
   const warnings: string[] = [];
 
   for (const candidate of rankedSemester1) {
@@ -192,7 +212,7 @@ function chooseBalancedModules(
       break;
     }
 
-    const blockedBy = getBlockedBy(candidate.module, selectedEarlierCodes, modules);
+    const blockedBy = getBlockedBy(candidate.module, selectedEarlierCodes, modules, previouslyTakenCodes);
 
     if (blockedBy.length > 0) {
       warnings.push(...blockedBy);
@@ -217,11 +237,12 @@ export function generateRecommendations(modules: ModuleRecord[], answers: Adviso
   const semester2Modules = modules.filter((module) => module.semester === "semester2");
   const rankedSemester1 = rankModules(semester1Modules, answers);
   const selectedEarlierCodes = new Set(rankedSemester1.slice(0, 3).map((item) => item.module.code));
+  const previouslyTakenCodes = getPreviouslyTakenCodes(answers);
   const rankedSemester2 = rankModules(semester2Modules, answers).map((item) => ({
     ...item,
-    blockedBy: getBlockedBy(item.module, selectedEarlierCodes, modules),
+    blockedBy: getBlockedBy(item.module, selectedEarlierCodes, modules, previouslyTakenCodes),
   }));
-  const balancedPlan = chooseBalancedModules(rankedSemester1, rankedSemester2, modules);
+  const balancedPlan = chooseBalancedModules(rankedSemester1, rankedSemester2, modules, answers);
 
   return {
     semester1: rankedSemester1.slice(0, 5),

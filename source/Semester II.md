@@ -1,4 +1,3 @@
-[[Cloud Application Development]]
 [[Social Computing Techniques]]
 [[Advanced Computer Networks]]
 [[Advanced Databases]]

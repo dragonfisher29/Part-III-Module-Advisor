@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import { generateRecommendations } from "./recommendations";
-import type { AdvisorFormData, ModuleRecord } from "./types";
+import type { ModuleRecord } from "./types";
+import type { AdvisorFormData } from "./validation";
 
 const baseAnswers: AdvisorFormData = {
   name: "Test User",
@@ -13,6 +14,7 @@ const baseAnswers: AdvisorFormData = {
   careerGoal: "ai-data",
   broadeningInterest: false,
   aiMlInterest: true,
+  priorModules: [],
   theoryPracticeBalance: "balanced",
   notes: "",
 };
@@ -96,6 +98,19 @@ const modules: ModuleRecord[] = [
     workloadProfile: "balanced",
     sourceFile: "Causal Reasoning and Machine Learning.md",
   },
+  {
+    code: "COMP3212",
+    title: "Computational Biology",
+    semester: "semester2",
+    credits: 15,
+    overview: "Computational methods in biology.",
+    assessment: "mixed",
+    prerequisites: ["COMP2208"],
+    prerequisiteNote: "Requires COMP2208.",
+    tags: ["data", "theory"],
+    workloadProfile: "balanced",
+    sourceFile: "Computational Biology.md",
+  },
 ];
 
 describe("generateRecommendations", () => {
@@ -122,5 +137,14 @@ describe("generateRecommendations", () => {
     const result = generateRecommendations(modules, baseAnswers);
 
     expect(result.warnings.some((warning) => warning.includes("COMP3224"))).toBe(true);
+  });
+
+  it("treats selected prior-year modules as satisfied prerequisites", () => {
+    const result = generateRecommendations(modules, {
+      ...baseAnswers,
+      priorModules: ["COMP2208"],
+    });
+
+    expect(result.warnings.some((warning) => warning.includes("COMP2208"))).toBe(false);
   });
 });
