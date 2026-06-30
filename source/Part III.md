@@ -28,31 +28,31 @@ In Part III, all students must take ECSP3000/ECSP3001 Individual Project. Note t
 
 ### Optional
 
-| Code     | Title                                           | Credits | Semester |
-| -------- | ----------------------------------------------- | ------- | -------- |
-| COMP3204 | [[Computer Vision]]                             | 15      | I        |
-| COMP3207 | [[Cloud Application Development]]               | 15      | I        |
-| COMP3208 | [[Social Computing Techniques]]                 | 15      | II       |
-| COMP3210 | [[Advanced Computer Networks]]                  | 15      | II       |
-| COMP3211 | [[Advanced Databases]]                          | 15      | II       |
-| COMP3212 | [[Computational Biology]]                       | 15      | II       |
-| COMP3215 | [[Real-Time Computing and Embedded Systems]]    | 15      | I        |
-| COMP3217 | [[Security of Cyber Physical Systems]]          | 15      | II       |
-| COMP3218 | [[Game Design and Development]]                 | 15      | I        |
-| COMP3224 | [[Causal Reasoning and Machine Learning]]       | 15      | II       |
-| COMP3225 | [[Natural Language Processing]]                 | 15      | II       |
-| COMP3226 | [[Web and Cloud Based Security]]                | 15      |          |
-| COMP3227 | [[Web Architecture and Hypertext Technologies]] | 15      | I        |
-| COMP3228 | [[History of Computing]]                        | 15      | I        |
-| ELEC3219 | [[Advanced Computer Architecture]]              | 15      |          |
-| MATH3081 | [[Operational Research]]                        | 15      | II       |
-| MATH3082 | [[Optimisation]]                                | 15      | II       |
+| No. | Code     | Title                                           | Credits | Semester |
+| --- | -------- | ----------------------------------------------- | ------- | -------- |
+| 1   | COMP3204 | [[Computer Vision]]                             | 15      | I        |
+| 2   | COMP3207 | [[Cloud Application Development]]               | 15      | I        |
+| 3   | COMP3208 | [[Social Computing Techniques]]                 | 15      | II       |
+| 4   | COMP3210 | [[Advanced Computer Networks]]                  | 15      | II       |
+| 5   | COMP3211 | [[Advanced Databases]]                          | 15      | II       |
+| 6   | COMP3212 | [[Computational Biology]]                       | 15      | II       |
+| 7   | COMP3215 | [[Real-Time Computing and Embedded Systems]]    | 15      | I        |
+| 8   | COMP3217 | [[Security of Cyber Physical Systems]]          | 15      | II       |
+| 9   | COMP3218 | [[Game Design and Development]]                 | 15      | I        |
+| 10  | COMP3224 | [[Causal Reasoning and Machine Learning]]       | 15      | II       |
+| 11  | COMP3225 | [[Natural Language Processing]]                 | 15      | II       |
+| 12  | COMP3226 | [[Web and Cloud Based Security]]                | 15      |          |
+| 13  | COMP3227 | [[Web Architecture and Hypertext Technologies]] | 15      | I        |
+| 14  | COMP3228 | [[History of Computing]]                        | 15      | I        |
+| 15  | ELEC3219 | [[Advanced Computer Architecture]]              | 15      |          |
+| 16  | MATH3081 | [[Operational Research]]                        | 15      | II       |
+| 17  | MATH3082 | [[Optimisation]]                                | 15      | II       |
 
 #### Machine Learning
 
 Students may only take one Machine Learning module.
 
-| Code     | Title                                       | Credits | Semester |
-| -------- | ------------------------------------------- | ------- | -------- |
-| COMP3223 | [[Foundations of Machine Learning 2026-27]] | 15      |          |
-| COMP3222 | [[Machine Learning Technologies 2026-27]]   | 15      | I        |
+| No. | Code     | Title                                       | Credits | Semester |
+| --- | -------- | ------------------------------------------- | ------- | -------- |
+| 18  | COMP3223 | [[Foundations of Machine Learning 2026-27]] | 15      |          |
+| 19  | COMP3222 | [[Machine Learning Technologies 2026-27]]   | 15      | I        |

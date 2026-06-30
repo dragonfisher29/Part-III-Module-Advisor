@@ -3,4 +3,5 @@
 node_modules/
 .trae/
 .next/
-.obsidian/
+/.obsidian/
+/source/.obsidian/
