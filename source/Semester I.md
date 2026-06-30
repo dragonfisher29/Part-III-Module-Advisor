@@ -1,0 +1,5 @@
+[[Computer Vision]]
+[[Game Design and Development]]
+[[Web Architecture and Hypertext Technologies]]
+[[History of Computing]]
+[[Machine Learning Technologies 2026-27]]

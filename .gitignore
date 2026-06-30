@@ -1,0 +1,4 @@
+/.env.local
+/.pipeline
+node_modules
+/.trae
