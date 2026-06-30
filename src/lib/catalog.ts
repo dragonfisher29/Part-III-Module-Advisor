@@ -21,6 +21,11 @@ type SummativeAssessmentRow = {
   groupWork: string;
 };
 
+type StudyTimeRow = {
+  type: string;
+  hours: number;
+};
+
 let cachedCatalog: ModuleRecord[] | null = null;
 
 function resolveWorkspacePath(fileName: string) {
@@ -205,6 +210,35 @@ function extractAssessmentTags(content: string) {
   return [...new Set(tags)];
 }
 
+function extractStudyTimeRows(studyTime: string): StudyTimeRow[] {
+  const lines = studyTime
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.startsWith("|"));
+
+  if (lines.length < 3) {
+    return [];
+  }
+
+  const rows = lines
+    .slice(2)
+    .map((line) =>
+      line
+        .replace(/^\|/, "")
+        .replace(/\|$/, "")
+        .split("|")
+        .map((cell) => cell.trim()),
+    )
+    .filter((cells) => cells[0] && cells[1]);
+
+  return rows
+    .map((cells) => ({
+      type: cells[0] ?? "",
+      hours: Number.parseFloat((cells[1] ?? "").replace(/[^\d.]/g, "")),
+    }))
+    .filter((row) => Number.isFinite(row.hours) && !/total study time/i.test(row.type));
+}
+
 function extractPrerequisites(content: string, moduleCode: string) {
   const requisites = extractSection(content, "Requisites");
   const codes = [...new Set([...requisites.matchAll(/\b[A-Z]{4}\d{4}\b/g)].map((match) => match[0]))].filter(
@@ -269,14 +303,52 @@ function inferTags(title: string, overview: string, syllabus: string, assessment
   return [...tags];
 }
 
-function inferWorkloadProfile(content: string, assessment: AssessmentStyle): WorkloadPreference {
-  const lower = content.toLowerCase();
+function inferWorkloadProfile(studyTime: string, assessment: AssessmentStyle): WorkloadPreference {
+  const rows = extractStudyTimeRows(studyTime);
 
-  if (assessment === "coursework" || /project|laboratory|lab|specialist laboratory/.test(lower)) {
+  if (rows.length === 0) {
+    if (assessment === "coursework") {
+      return "intensive";
+    }
+
+    if (assessment === "exam") {
+      return "light";
+    }
+
+    return "balanced";
+  }
+
+  const sumHours = (pattern: RegExp) =>
+    rows.reduce((total, row) => (pattern.test(row.type.toLowerCase()) ? total + row.hours : total), 0);
+
+  const totalHours = rows.reduce((total, row) => total + row.hours, 0);
+  const assessmentTaskHours = sumHours(/assessment task|completion of assessment task|coursework|project/);
+  const contactHours = sumHours(/lecture|teaching|tutorial|seminar|laboratory|workshop|studio/);
+  const practicalHours = sumHours(/laboratory|workshop|studio/);
+  const independentHours = sumHours(/independent study|wider reading|follow-up work|preparation|revision/);
+
+  if (totalHours <= 0) {
+    return "balanced";
+  }
+
+  const assessmentRatio = assessmentTaskHours / totalHours;
+  const contactRatio = contactHours / totalHours;
+  const practicalRatio = practicalHours / totalHours;
+  const independentRatio = independentHours / totalHours;
+
+  if (
+    assessmentRatio >= 0.45 ||
+    (assessmentRatio >= 0.35 && (practicalRatio >= 0.12 || contactRatio >= 0.28)) ||
+    (assessment === "coursework" && assessmentRatio >= 0.4)
+  ) {
     return "intensive";
   }
 
-  if (assessment === "exam") {
+  if (
+    (assessmentRatio <= 0.18 && independentRatio >= 0.6) ||
+    (assessment === "exam" && assessmentRatio < 0.1 && independentRatio >= 0.55) ||
+    (assessmentRatio <= 0.2 && practicalRatio < 0.1 && independentRatio >= 0.58)
+  ) {
     return "light";
   }
 
@@ -342,7 +414,7 @@ function parseModule(titleFromSemester: string, semester: ModuleRecord["semester
     prerequisites,
     prerequisiteNote,
     tags,
-    workloadProfile: inferWorkloadProfile(`${overview} ${syllabus} ${content}`, assessment),
+    workloadProfile: inferWorkloadProfile(studyTime, assessment),
     sourceFile: fileName,
   };
 }

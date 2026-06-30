@@ -82,7 +82,7 @@ The advisor combines questionnaire answers with metadata parsed from the module 
 - interests: boosts modules whose tags match the selected subject areas
 - career goal: adds extra weight for tags aligned with software engineering, AI/data, research, cybersecurity, product/UX, or an undecided path
 - assessment preference: supports `Coursework`, `Exam`, `Continuous Assessment`, and `Final Assessment`
-- workload preference: boosts modules whose workload profile matches `light`, `balanced`, or `intensive`
+- workload preference: boosts modules whose inferred workload profile matches `light`, `balanced`, or `intensive`
 - theory vs practical balance: boosts modules tagged as `theory` or `practical`
 - broadening interest: boosts the maths broadening modules when explicitly requested
 - AI/ML preference: gives additional weight to modules tagged `ai-ml`
@@ -107,6 +107,15 @@ Assessment preference is handled separately so the advisor can use both coarse c
 - `Exam`: strongest match for pure exam modules, then for coarse exam modules, then for modules whose tags mention exam, examination, or final assessment
 - `Continuous Assessment`: strongest match for continuous-assessment-heavy modules, then keyword matching against parsed assessment tags
 - `Final Assessment`: strongest match for final-assessment-heavy modules, then keyword matching against parsed assessment tags
+
+Workload tagging is also derived from parsed source data rather than hard-coded labels. Every 15-credit module has the same total study-time budget, so the workload classifier does not use the raw total hours as a differentiator. Instead, it parses each module's `Study Time` table and compares how that fixed budget is distributed across:
+
+- assessment-task time
+- contact teaching time
+- practical delivery time such as labs, workshops, or studio sessions
+- independent study time such as reading, preparation, and revision
+
+That split is then used to infer `light`, `balanced`, or `intensive`. Modules with a large assessment share or a heavy practical/contact mix tend to be marked `intensive`, while modules dominated by independent study with a low assessment share tend to be marked `light`.
 
 The advisor also generates short explanation strings for the UI, such as why a module matched the user's interests, workload, or assessment preference.
 
