@@ -96,6 +96,8 @@ export function ModuleAdvisor({ modules }: { modules: ModuleRecord[] }) {
   const [statusNote, setStatusNote] = useState<string | null>(null);
   const semester1Modules = modules.filter((module) => module.semester === "semester1");
   const semester2Modules = modules.filter((module) => module.semester === "semester2");
+  const hasComp3223 = modules.some((module) => module.code === "COMP3223");
+  const comp3224Unavailable = !hasComp3223 && modules.some((module) => module.code === "COMP3224");
   const {
     register,
     handleSubmit,
@@ -184,6 +186,12 @@ export function ModuleAdvisor({ modules }: { modules: ModuleRecord[] }) {
               <p className="mt-3 text-3xl font-semibold text-white">{semester2Modules.length}</p>
             </div>
           </div>
+          {comp3224Unavailable ? (
+            <div className="rounded-[24px] border border-amber-400/25 bg-amber-500/10 p-4 text-sm leading-6 text-amber-100">
+              `COMP3224 Causal Reasoning and Machine Learning` currently cannot be scheduled because `COMP3223` is not
+              present in the active source markdown pool. The advisor will flag it as unavailable in recommendations.
+            </div>
+          ) : null}
         </div>
         <div className="relative min-h-[280px] overflow-hidden rounded-[28px] border border-white/10 bg-[radial-gradient(circle_at_top,_rgba(255,122,24,0.32),_transparent_36%),linear-gradient(160deg,_rgba(255,255,255,0.18),_rgba(255,255,255,0.02))] p-6">
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.02),rgba(0,0,0,0.5))]" />
@@ -356,8 +364,20 @@ export function ModuleAdvisor({ modules }: { modules: ModuleRecord[] }) {
                   <div className="mt-4 space-y-3 text-sm text-slate-200/82">
                     {group.map((module) => (
                       <Link key={module.code} className={moduleListCardClassName} href={getModuleHref(module)}>
-                        <p className="font-medium text-white">{module.code} · {module.title}</p>
+                        <div className="flex items-start justify-between gap-3">
+                          <p className="font-medium text-white">{module.code} · {module.title}</p>
+                          {comp3224Unavailable && module.code === "COMP3224" ? (
+                            <span className="rounded-full border border-amber-300/25 bg-amber-500/10 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-amber-100">
+                              Unavailable
+                            </span>
+                          ) : null}
+                        </div>
                         <p className="mt-1 line-clamp-3">{module.overview}</p>
+                        {comp3224Unavailable && module.code === "COMP3224" ? (
+                          <p className="mt-2 text-xs leading-5 text-amber-100/90">
+                            Requires `COMP3223`, which is not active in the current source markdown list.
+                          </p>
+                        ) : null}
                         <p className="mt-3 text-xs uppercase tracking-[0.24em] text-orange-100/75 opacity-0 transition duration-300 group-hover:opacity-100 group-focus-visible:opacity-100">
                           View module
                         </p>

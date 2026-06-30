@@ -183,30 +183,51 @@ function rankModules(modules: ModuleRecord[], answers: AdvisorFormData): RankedM
     .sort((left, right) => right.score - left.score || left.module.code.localeCompare(right.module.code));
 }
 
-function chooseBalancedModules(
+function hasSemester1Conflict(selectedCodes: Set<string>, candidateCode: string) {
+  return (
+    (candidateCode === "COMP3222" && selectedCodes.has("COMP3223")) ||
+    (candidateCode === "COMP3223" && selectedCodes.has("COMP3222"))
+  );
+}
+
+function buildSemester1Plans(
   rankedSemester1: RankedModule[],
-  rankedSemester2: RankedModule[],
-  modules: ModuleRecord[],
-  answers: AdvisorFormData,
-) {
-  const chosenSemester1: RankedModule[] = [];
-  const chosenSemester2: RankedModule[] = [];
-  const selectedEarlierCodes = new Set<string>();
-  const previouslyTakenCodes = getPreviouslyTakenCodes(answers);
-  const warnings: string[] = [];
+  targetCount: number,
+  offset = 0,
+  currentPlan: RankedModule[] = [],
+): RankedModule[][] {
+  if (currentPlan.length === targetCount) {
+    return [currentPlan];
+  }
 
-  for (const candidate of rankedSemester1) {
-    if (chosenSemester1.length >= PLAN_COUNTS.semester1) {
-      break;
-    }
+  if (offset >= rankedSemester1.length) {
+    return [];
+  }
 
-    if (candidate.module.code === "COMP3223" && selectedEarlierCodes.has("COMP3222")) {
+  const plans: RankedModule[][] = [];
+  const selectedCodes = new Set(currentPlan.map((item) => item.module.code));
+
+  for (let index = offset; index < rankedSemester1.length; index += 1) {
+    const candidate = rankedSemester1[index];
+
+    if (hasSemester1Conflict(selectedCodes, candidate.module.code)) {
       continue;
     }
 
-    chosenSemester1.push(candidate);
-    selectedEarlierCodes.add(candidate.module.code);
+    plans.push(...buildSemester1Plans(rankedSemester1, targetCount, index + 1, [...currentPlan, candidate]));
   }
+
+  return plans;
+}
+
+function chooseSemester2Modules(
+  rankedSemester2: RankedModule[],
+  selectedEarlierCodes: Set<string>,
+  modules: ModuleRecord[],
+  previouslyTakenCodes: Set<string>,
+) {
+  const chosenSemester2: RankedModule[] = [];
+  const warnings: string[] = [];
 
   for (const candidate of rankedSemester2) {
     if (chosenSemester2.length >= PLAN_COUNTS.semester2) {
@@ -227,9 +248,76 @@ function chooseBalancedModules(
   }
 
   return {
-    semester1: chosenSemester1,
     semester2: chosenSemester2,
     warnings: [...new Set(warnings)],
+    score: chosenSemester2.reduce((total, item) => total + item.score, 0),
+  };
+}
+
+function chooseBalancedModules(
+  rankedSemester1: RankedModule[],
+  rankedSemester2: RankedModule[],
+  modules: ModuleRecord[],
+  answers: AdvisorFormData,
+) {
+  const previouslyTakenCodes = getPreviouslyTakenCodes(answers);
+  const semester1Plans = buildSemester1Plans(rankedSemester1, PLAN_COUNTS.semester1);
+
+  if (semester1Plans.length === 0) {
+    return {
+      semester1: [] as RankedModule[],
+      semester2: [] as RankedModule[],
+      warnings: [] as string[],
+    };
+  }
+
+  let bestPlan: {
+    semester1: RankedModule[];
+    semester2: RankedModule[];
+    warnings: string[];
+    totalScore: number;
+  } | null = null;
+
+  for (const semester1Plan of semester1Plans) {
+    const selectedEarlierCodes = new Set(semester1Plan.map((item) => item.module.code));
+    const semester2Plan = chooseSemester2Modules(rankedSemester2, selectedEarlierCodes, modules, previouslyTakenCodes);
+    const totalScore = semester1Plan.reduce((total, item) => total + item.score, 0) + semester2Plan.score;
+
+    const candidatePlan = {
+      semester1: semester1Plan,
+      semester2: semester2Plan.semester2,
+      warnings: semester2Plan.warnings,
+      totalScore,
+    };
+
+    if (!bestPlan) {
+      bestPlan = candidatePlan;
+      continue;
+    }
+
+    if (candidatePlan.semester2.length !== bestPlan.semester2.length) {
+      if (candidatePlan.semester2.length > bestPlan.semester2.length) {
+        bestPlan = candidatePlan;
+      }
+      continue;
+    }
+
+    if (candidatePlan.totalScore !== bestPlan.totalScore) {
+      if (candidatePlan.totalScore > bestPlan.totalScore) {
+        bestPlan = candidatePlan;
+      }
+      continue;
+    }
+
+    if (candidatePlan.warnings.length < bestPlan.warnings.length) {
+      bestPlan = candidatePlan;
+    }
+  }
+
+  return {
+    semester1: bestPlan?.semester1 ?? [],
+    semester2: bestPlan?.semester2 ?? [],
+    warnings: bestPlan?.warnings ?? [],
   };
 }
 
@@ -237,17 +325,18 @@ export function generateRecommendations(modules: ModuleRecord[], answers: Adviso
   const semester1Modules = modules.filter((module) => module.semester === "semester1");
   const semester2Modules = modules.filter((module) => module.semester === "semester2");
   const rankedSemester1 = rankModules(semester1Modules, answers);
-  const selectedEarlierCodes = new Set(rankedSemester1.slice(0, 3).map((item) => item.module.code));
+  const rankedSemester2 = rankModules(semester2Modules, answers);
+  const balancedPlan = chooseBalancedModules(rankedSemester1, rankedSemester2, modules, answers);
+  const selectedEarlierCodes = new Set(balancedPlan.semester1.map((item) => item.module.code));
   const previouslyTakenCodes = getPreviouslyTakenCodes(answers);
-  const rankedSemester2 = rankModules(semester2Modules, answers).map((item) => ({
+  const rankedSemester2WithBlockers = rankedSemester2.map((item) => ({
     ...item,
     blockedBy: getBlockedBy(item.module, selectedEarlierCodes, modules, previouslyTakenCodes),
   }));
-  const balancedPlan = chooseBalancedModules(rankedSemester1, rankedSemester2, modules, answers);
 
   return {
     semester1: rankedSemester1.slice(0, 5),
-    semester2: rankedSemester2.slice(0, 5),
+    semester2: rankedSemester2WithBlockers.slice(0, 5),
     balancedPlan: {
       semester1: balancedPlan.semester1,
       semester2: balancedPlan.semester2,
