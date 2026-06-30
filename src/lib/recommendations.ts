@@ -1,9 +1,10 @@
+import { formatAssessmentPreference, getAssessmentPreferenceMatchScore } from "./assessment";
 import type {
   ModuleRecord,
   RankedModule,
   RecommendationResult,
-} from "@/lib/types";
-import type { AdvisorFormData } from "@/lib/validation";
+} from "./types";
+import type { AdvisorFormData } from "./validation";
 
 type InterestTag = AdvisorFormData["interests"][number];
 
@@ -46,8 +47,12 @@ function buildReasons(module: ModuleRecord, answers: AdvisorFormData) {
     reasons.push("Supports your current career direction.");
   }
 
-  if (module.assessment === answers.assessmentPreference) {
-    reasons.push(`Fits your ${answers.assessmentPreference} assessment preference.`);
+  const assessmentMatchScore = getAssessmentPreferenceMatchScore(module, answers.assessmentPreference);
+
+  if (assessmentMatchScore >= 4) {
+    reasons.push(`Exactly matches your ${formatAssessmentPreference(answers.assessmentPreference).toLowerCase()} assessment preference.`);
+  } else if (assessmentMatchScore >= 2) {
+    reasons.push(`Fits your ${formatAssessmentPreference(answers.assessmentPreference).toLowerCase()} assessment preference.`);
   }
 
   if (module.workloadProfile === answers.workloadPreference) {
@@ -90,11 +95,7 @@ function scoreModule(module: ModuleRecord, answers: AdvisorFormData) {
     }
   }
 
-  if (module.assessment === answers.assessmentPreference) {
-    score += 3;
-  } else if (answers.assessmentPreference === "mixed" || module.assessment === "mixed") {
-    score += 1;
-  }
+  score += getAssessmentPreferenceMatchScore(module, answers.assessmentPreference);
 
   if (module.workloadProfile === answers.workloadPreference) {
     score += 2;

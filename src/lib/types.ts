@@ -2,9 +2,19 @@ export type Semester = "semester1" | "semester2";
 
 export type AssessmentStyle = "coursework" | "exam" | "mixed";
 
+export type GranularAssessmentStyle =
+  | "pure-coursework"
+  | "pure-exam"
+  | "coursework-heavy"
+  | "exam-heavy"
+  | "continuous-assessment-heavy"
+  | "final-assessment-heavy"
+  | "balanced-mix"
+  | "mixed-unknown";
+
 export type WorkloadPreference = "light" | "balanced" | "intensive";
 
-export type AssessmentPreference = AssessmentStyle;
+export type AssessmentPreference = "coursework" | "exam" | "continuous-assessment" | "final-assessment";
 
 export type TheoryPracticeBalance = "practical" | "balanced" | "theory";
 
@@ -31,7 +41,12 @@ export interface ModuleRecord {
   semester: Semester;
   credits: number;
   overview: string;
+  syllabusSummary: string;
+  studyTime: string;
+  assessmentFeedbackSummary: string;
   assessment: AssessmentStyle;
+  granularAssessment: GranularAssessmentStyle;
+  assessmentTags: string[];
   prerequisites: string[];
   prerequisiteNote: string | null;
   tags: string[];

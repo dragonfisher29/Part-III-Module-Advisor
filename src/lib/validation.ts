@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { ASSESSMENT_PREFERENCE_OPTIONS } from "./assessment";
+
 const CONTROL_CHARS = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g;
 export const PRIOR_MODULE_CODES = ["COMP1202", "COMP1203", "COMP1206", "COMP2208"] as const;
 
@@ -39,7 +41,7 @@ export const advisorFormSchema = z.object({
       "maths-optimisation",
     ]),
   ).min(1, "Choose at least one interest."),
-  assessmentPreference: z.enum(["coursework", "exam", "mixed"]),
+  assessmentPreference: z.enum(ASSESSMENT_PREFERENCE_OPTIONS),
   workloadPreference: z.enum(["light", "balanced", "intensive"]),
   careerGoal: z.enum([
     "software-engineering",

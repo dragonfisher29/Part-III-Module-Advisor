@@ -1,7 +1,8 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import type { AssessmentStyle, ModuleRecord, WorkloadPreference } from "@/lib/types";
+import { getModuleSlug } from "./module-links";
+import type { AssessmentStyle, GranularAssessmentStyle, ModuleRecord, WorkloadPreference } from "./types";
 
 const ROOT_DIR = process.cwd();
 const CONTENT_DIR_CANDIDATES = [path.join(ROOT_DIR, "source"), ROOT_DIR];
@@ -13,6 +14,12 @@ const SEMESTER_FILES = {
 
 const YEAR_SUFFIX_PATTERN = /\s+\d{4}-\d{2}$/;
 const MODULE_CODE_PATTERN = /\b[A-Z]{4}\d{4}\b/;
+
+type SummativeAssessmentRow = {
+  method: string;
+  contribution: string;
+  groupWork: string;
+};
 
 let cachedCatalog: ModuleRecord[] | null = null;
 
@@ -43,28 +50,159 @@ function extractSection(content: string, heading: string) {
   return match?.[1].trim() ?? "";
 }
 
+function extractSubsection(content: string, parentHeading: string, subHeading: string) {
+  const parentSection = extractSection(content, parentHeading);
+
+  if (!parentSection) {
+    return "";
+  }
+
+  const escapedSubHeading = subHeading.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const match = parentSection.match(
+    new RegExp(`### ${escapedSubHeading}\\s*\\n([\\s\\S]*?)(?=\\n### |$)`, "i"),
+  );
+
+  return match?.[1].trim() ?? "";
+}
+
 function parseSemesterList(fileName: string) {
   const content = readWorkspaceFile(fileName);
   return [...content.matchAll(/\[\[(.+?)\]\]/g)].map((match) => match[1].trim());
 }
 
+function extractAssessmentSubsection(content: string, heading: string) {
+  const escapedHeading = heading.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const match = content.match(
+    new RegExp(`(?:^|\\r?\\n)#### ${escapedHeading}\\s*\\r?\\n([\\s\\S]*?)(?=\\r?\\n#### |\\r?\\n### |\\r?\\n## |$)`, "i"),
+  );
+
+  return match?.[1].trim() ?? "";
+}
+
+function extractSummativeAssessmentRows(content: string): SummativeAssessmentRow[] {
+  const summative = extractAssessmentSubsection(content, "Summative");
+  const lines = summative
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.startsWith("|"));
+
+  if (lines.length < 3) {
+    return [];
+  }
+
+  const rows = lines
+    .slice(2)
+    .map((line) =>
+      line
+        .replace(/^\|/, "")
+        .replace(/\|$/, "")
+        .split("|")
+        .map((cell) => cell.trim()),
+    )
+    .filter((cells) => cells[0]);
+
+  return rows.map((cells) => ({
+    method: cells[0] ?? "",
+    contribution: cells[1] ?? "",
+    groupWork: cells[3] ?? "",
+  }));
+}
+
 function extractAssessmentStyle(content: string): AssessmentStyle {
-  const summative = content.match(/#### Summative([\s\S]*?)(#### Referral|---)/i)?.[1] ?? "";
-  const lower = summative.toLowerCase();
+  const granularStyle = extractGranularStyle(content);
 
-  if (lower.includes("examination") && (lower.includes("coursework") || lower.includes("continuous assessment"))) {
-    return "mixed";
+  if (granularStyle === "pure-coursework") {
+    return "coursework";
   }
 
-  if (lower.includes("continuous assessment") || lower.includes("coursework")) {
-    return lower.includes("100 %") ? "coursework" : "mixed";
-  }
-
-  if (lower.includes("examination")) {
+  if (granularStyle === "pure-exam") {
     return "exam";
   }
 
   return "mixed";
+}
+
+function extractGranularStyle(content: string): GranularAssessmentStyle {
+  const summative = extractAssessmentSubsection(content, "Summative");
+  const lower = summative.toLowerCase();
+
+  const hasExam = lower.includes("examination") || lower.includes("exam");
+  const hasFinal = lower.includes("final assessment");
+  const hasCW = lower.includes("coursework");
+  const hasCA = lower.includes("continuous assessment");
+
+  if ((hasCW || hasCA) && !hasExam && !hasFinal) {
+    return "pure-coursework";
+  }
+
+  if ((hasExam || hasFinal) && !hasCW && !hasCA) {
+    return "pure-exam";
+  }
+
+  const percentages = lower.match(/\d+/g)?.map(Number) ?? [];
+
+  if (percentages.length >= 2) {
+    const [first, second] = percentages;
+
+    if (first === 50 && second === 50) {
+      return "balanced-mix";
+    }
+
+    const examPos = lower.indexOf("exam");
+    const finalPos = lower.indexOf("final assessment");
+    const cwPos = lower.indexOf("coursework");
+    const caPos = lower.indexOf("continuous assessment");
+
+    const positions = [
+      { type: "exam", pos: examPos },
+      { type: "final", pos: finalPos },
+      { type: "coursework", pos: cwPos },
+      { type: "continuous", pos: caPos },
+    ]
+      .filter((item) => item.pos !== -1)
+      .sort((left, right) => left.pos - right.pos);
+
+    if (positions.length >= 2) {
+      const dominantType = first > second ? positions[0].type : positions[1].type;
+
+      switch (dominantType) {
+        case "exam":
+          return "exam-heavy";
+        case "final":
+          return "final-assessment-heavy";
+        case "coursework":
+          return "coursework-heavy";
+        case "continuous":
+          return "continuous-assessment-heavy";
+      }
+    }
+  }
+
+  if (hasCA && !hasCW && (hasExam || hasFinal)) {
+    return "continuous-assessment-heavy";
+  }
+
+  if (hasFinal && !hasExam && (hasCW || hasCA)) {
+    return "final-assessment-heavy";
+  }
+
+  return "mixed-unknown";
+}
+
+function extractAssessmentTags(content: string) {
+  const rows = extractSummativeAssessmentRows(content);
+  const tags = rows.map((row) => {
+    const contribution = row.contribution ? ` ${row.contribution}` : "";
+    return `${row.method}${contribution}`.trim();
+  });
+
+  const hasGroupWork = rows.some((row) => row.groupWork.toLowerCase() === "yes");
+
+  if (hasGroupWork) {
+    tags.push("Group Work");
+  }
+
+  return [...new Set(tags)];
 }
 
 function extractPrerequisites(content: string, moduleCode: string) {
@@ -177,10 +315,15 @@ function parseModule(titleFromSemester: string, semester: ModuleRecord["semester
   const code = extractModuleCode(content, titleFromSemester);
   const headingTitle = extractModuleTitle(content, titleFromSemester);
   const overview = extractSection(content, "Module overview").replace(/\s+/g, " ").trim();
-  const syllabus = extractSection(content, "Syllabus summary").replace(/\s+/g, " ").trim();
+  const syllabusSummary = extractSection(content, "Syllabus summary").trim();
+  const studyTime = extractSubsection(content, "Learning and Teaching Summary", "Study Time");
+  const assessmentFeedbackSummary = extractSection(content, "Assessment and Feedback Summary").trim();
+  const syllabus = syllabusSummary.replace(/\s+/g, " ").trim();
   const creditsMatch = content.match(/\|School\|Module Code\|Credit Points\|Level\|[\s\S]*?\|.*?\|.*?\|(\d+)\|/);
   const credits = Number(creditsMatch?.[1] ?? 15);
   const assessment = extractAssessmentStyle(content);
+  const granularAssessment = extractGranularStyle(content);
+  const assessmentTags = extractAssessmentTags(content);
   const { prerequisites, prerequisiteNote } = extractPrerequisites(content, code);
   const tags = inferTags(headingTitle, overview, syllabus, assessment);
 
@@ -190,7 +333,12 @@ function parseModule(titleFromSemester: string, semester: ModuleRecord["semester
     semester,
     credits,
     overview,
+    syllabusSummary,
+    studyTime,
+    assessmentFeedbackSummary,
     assessment,
+    granularAssessment,
+    assessmentTags,
     prerequisites,
     prerequisiteNote,
     tags,
@@ -210,4 +358,8 @@ export function getModuleCatalog() {
   ];
 
   return cachedCatalog;
+}
+
+export function getModuleBySlug(slug: string) {
+  return getModuleCatalog().find((module) => getModuleSlug(module) === slug.toLowerCase()) ?? null;
 }

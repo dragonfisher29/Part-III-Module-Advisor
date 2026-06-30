@@ -1,8 +1,11 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 
+import { ASSESSMENT_PREFERENCE_OPTIONS, formatAssessmentPreference, formatGranularAssessmentStyle } from "@/lib/assessment";
+import { getModuleHref } from "@/lib/module-links";
 import type { ModuleRecord, RankedModule, RecommendationResult } from "@/lib/types";
 import { advisorFormSchema, PRIOR_MODULE_CODES } from "@/lib/validation";
 import type { AdvisorFormData, AdvisorFormInput } from "@/lib/validation";
@@ -30,39 +33,60 @@ const semesterLabels = {
   semester2: "Semester 2",
 } as const;
 
+const moduleCardClassName =
+  "glass group relative block overflow-hidden rounded-[28px] p-5 transition duration-300 ease-out hover:-translate-y-1.5 hover:border-orange-400/35 hover:bg-white/10 hover:shadow-[0_24px_60px_rgba(255,122,24,0.18)] focus-visible:-translate-y-1.5 focus-visible:border-orange-400/45 focus-visible:bg-white/10 focus-visible:shadow-[0_24px_60px_rgba(255,122,24,0.2)] focus-visible:outline-none";
+
+const moduleListCardClassName =
+  "group block rounded-2xl bg-black/18 px-4 py-3 transition duration-300 ease-out hover:-translate-y-1 hover:bg-black/30 hover:shadow-[0_18px_40px_rgba(255,122,24,0.12)] focus-visible:-translate-y-1 focus-visible:bg-black/30 focus-visible:shadow-[0_18px_40px_rgba(255,122,24,0.14)] focus-visible:outline-none";
+
 function ModuleCard({ item }: { item: RankedModule }) {
+  const assessmentTags = [
+    formatGranularAssessmentStyle(item.module.granularAssessment),
+    ...item.module.assessmentTags,
+  ];
+
   return (
-    <article className="glass rounded-[28px] p-5">
-      <div className="mb-3 flex items-start justify-between gap-4">
+    <Link className={moduleCardClassName} href={getModuleHref(item.module)}>
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,122,24,0.18),transparent_34%)] opacity-0 transition duration-300 group-hover:opacity-100 group-focus-visible:opacity-100" />
+      <div className="relative mb-3 flex items-start justify-between gap-4">
         <div>
-          <p className="text-xs uppercase tracking-[0.3em] text-orange-200/70">{item.module.code}</p>
+          <p className="text-xs uppercase tracking-[0.3em] text-orange-200/70 transition duration-300 group-hover:text-orange-100 group-focus-visible:text-orange-100">
+            {item.module.code}
+          </p>
           <h4 className="mt-2 text-lg font-semibold text-white">{item.module.title}</h4>
         </div>
         <span className="rounded-full bg-orange-500/15 px-3 py-1 text-sm font-semibold text-orange-200">
           Score {item.score}
         </span>
       </div>
-      <p className="text-sm leading-6 text-slate-200/80">{item.module.overview}</p>
-      <div className="mt-4 flex flex-wrap gap-2 text-xs text-slate-200/80">
+      <p className="relative text-sm leading-6 text-slate-200/80">{item.module.overview}</p>
+      <div className="relative mt-4 flex flex-wrap gap-2 text-xs text-slate-200/80">
         <span className="rounded-full bg-white/7 px-3 py-1">{semesterLabels[item.module.semester]}</span>
-        <span className="rounded-full bg-white/7 px-3 py-1">{item.module.assessment}</span>
+        {assessmentTags.slice(0, 2).map((tag) => (
+          <span key={tag} className="rounded-full bg-white/7 px-3 py-1">
+            {tag}
+          </span>
+        ))}
         <span className="rounded-full bg-white/7 px-3 py-1">{item.module.workloadProfile}</span>
       </div>
       {item.reasons.length > 0 ? (
-        <div className="mt-4 space-y-2 text-sm text-orange-100/85">
+        <div className="relative mt-4 space-y-2 text-sm text-orange-100/85">
           {item.reasons.map((reason) => (
             <p key={reason}>- {reason}</p>
           ))}
         </div>
       ) : null}
       {item.blockedBy.length > 0 ? (
-        <div className="mt-4 rounded-2xl border border-amber-400/25 bg-amber-500/10 p-3 text-sm text-amber-100">
+        <div className="relative mt-4 rounded-2xl border border-amber-400/25 bg-amber-500/10 p-3 text-sm text-amber-100">
           {item.blockedBy.map((warning) => (
             <p key={warning}>{warning}</p>
           ))}
         </div>
       ) : null}
-    </article>
+      <div className="relative mt-4 text-sm font-medium text-orange-100/90 opacity-0 transition duration-300 group-hover:opacity-100 group-focus-visible:opacity-100">
+        Open module page
+      </div>
+    </Link>
   );
 }
 
@@ -83,7 +107,7 @@ export function ModuleAdvisor({ modules }: { modules: ModuleRecord[] }) {
       email: "",
       degreeRoute: "Computer Science Part III",
       interests: ["web-cloud"],
-      assessmentPreference: "mixed",
+      assessmentPreference: "coursework",
       workloadPreference: "balanced",
       careerGoal: "undecided",
       broadeningInterest: false,
@@ -266,9 +290,11 @@ export function ModuleAdvisor({ modules }: { modules: ModuleRecord[] }) {
             <label className="space-y-2">
               <span className="text-sm text-slate-200">Assessment</span>
               <select className="field" {...register("assessmentPreference")}>
-                <option value="coursework">Coursework</option>
-                <option value="exam">Exam</option>
-                <option value="mixed">Mixed</option>
+                {ASSESSMENT_PREFERENCE_OPTIONS.map((option) => (
+                  <option key={option} value={option}>
+                    {formatAssessmentPreference(option)}
+                  </option>
+                ))}
               </select>
             </label>
             <label className="space-y-2">
@@ -329,10 +355,13 @@ export function ModuleAdvisor({ modules }: { modules: ModuleRecord[] }) {
                   <h3 className="text-lg font-semibold text-white">{semesterLabels[index === 0 ? "semester1" : "semester2"]}</h3>
                   <div className="mt-4 space-y-3 text-sm text-slate-200/82">
                     {group.map((module) => (
-                      <div key={module.code} className="rounded-2xl bg-black/18 px-4 py-3">
+                      <Link key={module.code} className={moduleListCardClassName} href={getModuleHref(module)}>
                         <p className="font-medium text-white">{module.code} · {module.title}</p>
                         <p className="mt-1 line-clamp-3">{module.overview}</p>
-                      </div>
+                        <p className="mt-3 text-xs uppercase tracking-[0.24em] text-orange-100/75 opacity-0 transition duration-300 group-hover:opacity-100 group-focus-visible:opacity-100">
+                          View module
+                        </p>
+                      </Link>
                     ))}
                   </div>
                 </div>
@@ -379,9 +408,13 @@ export function ModuleAdvisor({ modules }: { modules: ModuleRecord[] }) {
                       <p className="text-sm uppercase tracking-[0.28em] text-orange-100/85">Semester 1</p>
                       <div className="mt-3 space-y-3">
                         {result.balancedPlan.semester1.map((item) => (
-                          <div key={item.module.code} className="rounded-2xl bg-black/20 px-4 py-3 text-sm text-slate-100">
+                          <Link
+                            key={item.module.code}
+                            className={moduleListCardClassName}
+                            href={getModuleHref(item.module)}
+                          >
                             {item.module.code} · {item.module.title}
-                          </div>
+                          </Link>
                         ))}
                       </div>
                     </div>
@@ -389,9 +422,13 @@ export function ModuleAdvisor({ modules }: { modules: ModuleRecord[] }) {
                       <p className="text-sm uppercase tracking-[0.28em] text-orange-100/85">Semester 2</p>
                       <div className="mt-3 space-y-3">
                         {result.balancedPlan.semester2.map((item) => (
-                          <div key={item.module.code} className="rounded-2xl bg-black/20 px-4 py-3 text-sm text-slate-100">
+                          <Link
+                            key={item.module.code}
+                            className={moduleListCardClassName}
+                            href={getModuleHref(item.module)}
+                          >
                             {item.module.code} · {item.module.title}
-                          </div>
+                          </Link>
                         ))}
                       </div>
                     </div>

@@ -9,7 +9,7 @@ const baseAnswers: AdvisorFormData = {
   email: "test@example.com",
   degreeRoute: "Computer Science Part III",
   interests: ["ai-ml"],
-  assessmentPreference: "mixed",
+  assessmentPreference: "coursework",
   workloadPreference: "balanced",
   careerGoal: "ai-data",
   broadeningInterest: false,
@@ -26,7 +26,12 @@ const modules: ModuleRecord[] = [
     semester: "semester1",
     credits: 15,
     overview: "Cloud applications with Python and JavaScript.",
+    syllabusSummary: "Cloud platforms, deployment, and application design.",
+    studyTime: "|Type|Hours|\n|---|---|\n|Lecture|24 hrs|",
+    assessmentFeedbackSummary: "Continuous Assessment 100%.",
     assessment: "coursework",
+    granularAssessment: "pure-coursework",
+    assessmentTags: ["Continuous Assessment 100%"],
     prerequisites: [],
     prerequisiteNote: null,
     tags: ["web-cloud", "practical"],
@@ -39,7 +44,12 @@ const modules: ModuleRecord[] = [
     semester: "semester1",
     credits: 15,
     overview: "Visual computing and image understanding.",
+    syllabusSummary: "Image processing, feature extraction, and recognition.",
+    studyTime: "|Type|Hours|\n|---|---|\n|Lecture|24 hrs|",
+    assessmentFeedbackSummary: "Mixed assessment.",
     assessment: "mixed",
+    granularAssessment: "final-assessment-heavy",
+    assessmentTags: ["Continuous Assessment 40 %", "Final Assessment 60 %"],
     prerequisites: [],
     prerequisiteNote: null,
     tags: ["ai-ml", "creative-visual", "practical"],
@@ -52,7 +62,12 @@ const modules: ModuleRecord[] = [
     semester: "semester1",
     credits: 15,
     overview: "Hands-on machine learning and data work.",
+    syllabusSummary: "Supervised learning, labs, and model evaluation.",
+    studyTime: "|Type|Hours|\n|---|---|\n|Lab|24 hrs|",
+    assessmentFeedbackSummary: "Coursework and final assessment.",
     assessment: "mixed",
+    granularAssessment: "balanced-mix",
+    assessmentTags: ["Examination 50 %", "Coursework 50 %"],
     prerequisites: [],
     prerequisiteNote: null,
     tags: ["ai-ml", "data", "practical", "theory"],
@@ -65,7 +80,12 @@ const modules: ModuleRecord[] = [
     semester: "semester2",
     credits: 15,
     overview: "NLP algorithms and applications.",
+    syllabusSummary: "Language models, parsing, and text classification.",
+    studyTime: "|Type|Hours|\n|---|---|\n|Lecture|24 hrs|",
+    assessmentFeedbackSummary: "Final exam.",
     assessment: "exam",
+    granularAssessment: "pure-exam",
+    assessmentTags: ["Examination 100 %"],
     prerequisites: ["COMP3222"],
     prerequisiteNote: "Requires COMP3222 or COMP3223.",
     tags: ["ai-ml", "data", "theory"],
@@ -78,7 +98,12 @@ const modules: ModuleRecord[] = [
     semester: "semester2",
     credits: 15,
     overview: "Database systems and implementation.",
+    syllabusSummary: "Transactions, storage, and query processing.",
+    studyTime: "|Type|Hours|\n|---|---|\n|Lecture|20 hrs|",
+    assessmentFeedbackSummary: "Mixed assessment.",
     assessment: "mixed",
+    granularAssessment: "final-assessment-heavy",
+    assessmentTags: ["Continuous Assessment 25 %", "Final Assessment 75 %"],
     prerequisites: [],
     prerequisiteNote: null,
     tags: ["web-cloud", "data", "practical"],
@@ -91,7 +116,12 @@ const modules: ModuleRecord[] = [
     semester: "semester2",
     credits: 15,
     overview: "Causal reasoning for machine learning.",
+    syllabusSummary: "Causality, inference, and ML applications.",
+    studyTime: "|Type|Hours|\n|---|---|\n|Lecture|24 hrs|",
+    assessmentFeedbackSummary: "Mixed assessment.",
     assessment: "mixed",
+    granularAssessment: "pure-coursework",
+    assessmentTags: ["Coursework 100%", "Group Work"],
     prerequisites: ["COMP3223"],
     prerequisiteNote: "Requires COMP3223.",
     tags: ["ai-ml", "maths-optimisation", "theory"],
@@ -104,7 +134,12 @@ const modules: ModuleRecord[] = [
     semester: "semester2",
     credits: 15,
     overview: "Computational methods in biology.",
+    syllabusSummary: "Biological data analysis and algorithms.",
+    studyTime: "|Type|Hours|\n|---|---|\n|Lecture|18 hrs|",
+    assessmentFeedbackSummary: "Mixed assessment.",
     assessment: "mixed",
+    granularAssessment: "pure-coursework",
+    assessmentTags: ["Coursework 30 %"],
     prerequisites: ["COMP2208"],
     prerequisiteNote: "Requires COMP2208.",
     tags: ["data", "theory"],
@@ -146,5 +181,30 @@ describe("generateRecommendations", () => {
     });
 
     expect(result.warnings.some((warning) => warning.includes("COMP2208"))).toBe(false);
+  });
+
+  it("boosts modules whose final assessment style matches the questionnaire preference", () => {
+    const result = generateRecommendations(modules, {
+      ...baseAnswers,
+      interests: ["web-cloud"],
+      aiMlInterest: false,
+      careerGoal: "software-engineering",
+      assessmentPreference: "final-assessment",
+    });
+
+    expect(result.semester2[0]?.module.code).toBe("COMP3211");
+  });
+
+  it("matches continuous assessment preferences against detailed assessment tags", () => {
+    const result = generateRecommendations(modules, {
+      ...baseAnswers,
+      interests: ["web-cloud"],
+      aiMlInterest: false,
+      careerGoal: "software-engineering",
+      assessmentPreference: "continuous-assessment",
+    });
+
+    expect(result.semester1.some((item) => item.module.code === "COMP3204")).toBe(true);
+    expect(result.semester2.some((item) => item.module.code === "COMP3211")).toBe(true);
   });
 });
