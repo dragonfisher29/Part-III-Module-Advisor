@@ -8,7 +8,7 @@ A Next.js web tool that helps students choose Semester 1 and Semester 2 Part III
 - ranks modules for Semester 1 and Semester 2
 - checks known prerequisite constraints
 - builds a balanced 5-module plan with 3 options in Semester 1 and 2 in Semester 2
-- deploys cleanly to Vercel
+- saves every run as a row in a local CSV file (`data/runs.csv`)
 
 ## Stack
 
@@ -18,34 +18,39 @@ A Next.js web tool that helps students choose Semester 1 and Semester 2 Part III
 - React Hook Form + Zod
 - Vitest
 
-## Local Setup
+## Getting Started
 
-1. Install dependencies:
+You need [Node.js](https://nodejs.org/) 20 or newer.
+
+1. Clone the repository and install dependencies:
 
 ```bash
+git clone https://github.com/dragonfisher29/Part-III-Module-Advisor.git
+cd Part-III-Module-Advisor
 npm install
 ```
 
-2. Run the app:
+2. Start the app:
 
 ```bash
 npm run dev
 ```
 
-3. Run tests:
+3. Open [http://localhost:3000](http://localhost:3000) and fill in the questionnaire.
+
+No accounts, API keys, or environment variables are needed.
+
+## Saved Runs
+
+Each time you submit the questionnaire, the answers and the recommended modules are appended as one row to `data/runs.csv` (created on the first run). Open it in any spreadsheet app to compare runs. List values such as interests and module plans are separated by `; `.
+
+The `data/` folder is git-ignored, so your saved runs stay on your machine. Delete the file to start fresh.
+
+## Running Tests
 
 ```bash
 npm test
 ```
-
-## Vercel Deployment
-
-1. Push the project to GitHub.
-2. Import the repository into Vercel.
-3. Set the root directory to this project.
-4. Deploy.
-
-Vercel will build the Next.js app and keep the markdown module source files available in the deployment bundle.
 
 ## Data Source
 

@@ -136,6 +136,8 @@ export function ModuleAdvisor({ modules }: { modules: ModuleRecord[] }) {
       error?: string;
       details?: string;
       recommendations?: RecommendationResult;
+      savedTo?: string | null;
+      saveError?: string | null;
     };
 
     if (!response.ok || !payload.recommendations) {
@@ -144,7 +146,11 @@ export function ModuleAdvisor({ modules }: { modules: ModuleRecord[] }) {
     }
 
     setResult(payload.recommendations);
-    setStatusNote("Recommendations generated.");
+    setStatusNote(
+      payload.saveError
+        ? `Recommendations generated, but saving the run failed: ${payload.saveError}`
+        : `Recommendations generated and saved to ${payload.savedTo}.`,
+    );
   }
 
   return (
@@ -161,7 +167,7 @@ export function ModuleAdvisor({ modules }: { modules: ModuleRecord[] }) {
             <p className="max-w-2xl text-base leading-7 text-slate-200/78 sm:text-lg">
               Answer a short set of questions about your interests, workload, assessment style, and career goals. The
               tool ranks your modules, checks known constraints, and builds a 5-module option plan with 3 modules in
-              Semester 1 and 2 modules in Semester 2.
+              Semester 1 and 2 modules in Semester 2. Every run is saved to a local CSV file so you can compare plans later.
             </p>
           </div>
           <div className="grid gap-4 sm:grid-cols-3">
