@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "description": "Semester 1 and 2 module recommendation tool for Part III students.",
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
     "clsx": "^2.1.1",
