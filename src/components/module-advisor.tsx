@@ -136,7 +136,6 @@ export function ModuleAdvisor({ modules }: { modules: ModuleRecord[] }) {
       error?: string;
       details?: string;
       recommendations?: RecommendationResult;
-      persistenceError?: string | null;
     };
 
     if (!response.ok || !payload.recommendations) {
@@ -145,13 +144,7 @@ export function ModuleAdvisor({ modules }: { modules: ModuleRecord[] }) {
     }
 
     setResult(payload.recommendations);
-    setStatusNote(
-      payload.persistenceError
-        ? `Recommendations generated, but the Supabase save failed: ${payload.persistenceError}`
-        : payload.recommendations.persisted
-          ? "Recommendations generated and saved to Supabase."
-          : "Recommendations generated locally. Add Supabase environment variables to store submissions.",
-    );
+    setStatusNote("Recommendations generated.");
   }
 
   return (
@@ -168,8 +161,7 @@ export function ModuleAdvisor({ modules }: { modules: ModuleRecord[] }) {
             <p className="max-w-2xl text-base leading-7 text-slate-200/78 sm:text-lg">
               Answer a short set of questions about your interests, workload, assessment style, and career goals. The
               tool ranks your modules, checks known constraints, and builds a 5-module option plan with 3 modules in
-              Semester 1 and 2 modules in Semester 2. It can also save the submission to Supabase when your deployment
-              keys are configured.
+              Semester 1 and 2 modules in Semester 2.
             </p>
           </div>
           <div className="grid gap-4 sm:grid-cols-3">
@@ -203,7 +195,6 @@ export function ModuleAdvisor({ modules }: { modules: ModuleRecord[] }) {
             <div className="grid gap-3 text-sm text-slate-100/84">
               <div className="rounded-2xl border border-white/10 bg-black/20 p-4">Boosts practical modules for software and cloud-focused students.</div>
               <div className="rounded-2xl border border-white/10 bg-black/20 p-4">Flags blocked combinations like unsupported prerequisite chains.</div>
-              <div className="rounded-2xl border border-white/10 bg-black/20 p-4">Stores submissions in Supabase for later analysis after deployment to Vercel.</div>
             </div>
           </div>
         </div>
@@ -395,7 +386,6 @@ export function ModuleAdvisor({ modules }: { modules: ModuleRecord[] }) {
                 <p className="text-sm uppercase tracking-[0.35em] text-slate-300">Results</p>
                 <h2 className="mt-2 text-2xl font-semibold text-white">Recommended path</h2>
               </div>
-              <div className="text-sm text-slate-300">{result?.persisted ? "Saved to Supabase" : "Local result preview"}</div>
             </div>
 
             {!result ? (

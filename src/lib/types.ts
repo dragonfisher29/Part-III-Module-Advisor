@@ -69,5 +69,4 @@ export interface RecommendationResult {
     semester2: RankedModule[];
   };
   warnings: string[];
-  persisted: boolean;
 }

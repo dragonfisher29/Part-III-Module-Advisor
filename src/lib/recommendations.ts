@@ -342,6 +342,5 @@ export function generateRecommendations(modules: ModuleRecord[], answers: Adviso
       semester2: balancedPlan.semester2,
     },
     warnings: balancedPlan.warnings,
-    persisted: false,
   };
 }

@@ -5,7 +5,6 @@
   "description": "Semester 1 and 2 module recommendation tool for Part III students.",
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
-    "@supabase/supabase-js": "^2.57.4",
     "clsx": "^2.1.1",
     "next": "^15.5.6",
     "react": "^19.2.7",
